@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbot</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script> 
+
+  <!-- Load Live2D Library -->
+  <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script> 
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'sans-serif'],
+          },
+          animation: {
+            'slide-in': 'slideIn 0.3s ease-out',
+            'typing': 'typing 1.4s infinite ease-in-out',
+            'pulse-dot': 'pulse 2s infinite',
+          },
+          keyframes: {
+            slideIn: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            typing: {
+              '0%, 60%, 100%': { transform: 'translateY(0)' },
+              '30%': { transform: 'translateY(-10px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-inter bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen text-slate-800">
+  <div class="flex h-screen max-w-7xl mx-auto bg-white shadow-2xl">
+    
+    <!-- Chat Section -->
+    <div class="flex-1 flex flex-col border-r border-slate-200">
+      
+      <!-- Chat Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold">AI Assistant</h2>
+            <div class="flex items-center space-x-2 text-sm opacity-90">
+              <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse-dot"></div>
+              <span>Online</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex space-x-2">
+          <button id="clearChat" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+            <i class="fas fa-trash text-sm"></i>
+          </button>
+          <button id="settingsBtn" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+            <i class="fas fa-cog text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-6 bg-slate-50 space-y-6 scroll-smooth">
+        <div class="flex space-x-4 animate-slide-in">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="max-w-xs lg:max-w-md bg-white rounded-2xl rounded-tl-md p-4 shadow-md">
+            <p class="text-slate-700 leading-relaxed">Halo! Saya adalah AI Assistant Anda. Bagaimana saya bisa membantu Anda hari ini?</p>
+            <span class="text-xs text-slate-500 mt-2 block">Sekarang</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="hidden px-6 pb-2">
+        <div class="flex space-x-4">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="bg-white rounded-2xl rounded-tl-md p-4 shadow-md">
+            <div class="flex space-x-1">
+              <div class="w-2 h-2 bg-slate-400 rounded-full animate-typing"></div>
+              <div class="w-2 h-2 bg-slate-400 rounded-full animate-typing" style="animation-delay: 0.2s;"></div>
+              <div class="w-2 h-2 bg-slate-400 rounded-full animate-typing" style="animation-delay: 0.4s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="p-6 bg-white border-t border-slate-200">
+        <div class="flex space-x-3 mb-4">
+          <input 
+            type="text" 
+            id="messageInput" 
+            placeholder="Ketik pesan Anda..." 
+            autocomplete="off"
+            class="flex-1 px-4 py-3 bg-slate-100 border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 text-slate-700"
+          >
+          <button 
+            id="sendButton" 
+            disabled
+            class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-105 shadow-lg"
+          >
+            <i class="fas fa-paper-plane text-sm"></i>
+          </button>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="flex flex-wrap gap-2">
+          <button class="quick-btn px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center space-x-2" data-message="Halo, apa kabar?">
+            <i class="fas fa-hand-wave text-yellow-500"></i>
+            <span>Sapa</span>
+          </button>
+          <button class="quick-btn px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center space-x-2" data-message="Bisakah Anda membantu saya?">
+            <i class="fas fa-question-circle text-blue-500"></i>
+            <span>Bantuan</span>
+          </button>
+          <button class="quick-btn px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center space-x-2" data-message="Ceritakan tentang diri Anda">
+            <i class="fas fa-info-circle text-green-500"></i>
+            <span>Info</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- L2D Character Section -->
+    <div class="w-96 bg-gradient-to-br from-orange-100 to-pink-100 flex flex-col relative overflow-hidden">
+      <!-- Tempat untuk Live2D Character -->
+      <div id="live2dCanvasWrapper" class="flex-1 w-full h-full flex items-center justify-center">
+        <!-- Canvas akan dimuat otomatis oleh Live2D -->
+      </div>
+
+      <!-- Tombol Kontrol -->
+      <div class="absolute bottom-6 right-6 flex space-x-2">
+        <button id="muteBtn" class="w-10 h-10 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-orange-700 transition-all duration-300 hover:scale-105 shadow-lg">
+          <i class="fas fa-volume-up text-sm"></i>
+        </button>
+        <button id="fullscreenBtn" class="w-10 h-10 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center text-orange-700 transition-all duration-300 hover:scale-105 shadow-lg">
+          <i class="fas fa-expand text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./js/chatbot.js"></script>
+  <script src="./js/live2dWidget.js"></script>
+</body>
+</html>
